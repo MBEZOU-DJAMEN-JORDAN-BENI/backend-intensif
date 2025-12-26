@@ -1,5 +1,3 @@
-# app/routes/auth.py
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -10,7 +8,7 @@ from app.services.user_service import UserService
 from app.models.user import User
 from app.auth.security import create_access_token, verify_token
 from datetime import timedelta
-
+1
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 # CONFIGURATION OAuth2 Indique à FastAPI où obtenir le token, tokenUrl doit correspondre à la route de login
@@ -37,7 +35,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         )
     
     # Créer le user
-    return UserService.create_user(db, user_data)
+    return UserService.create(db, user_data)
 
 # ============================================
 # ROUTE LOGIN
@@ -60,7 +58,7 @@ async def login(
     
     # Créer le token JWT
     access_token = create_access_token(
-        data={"sub": user.username},
+        data={"sub": str(user.id)},
         expires_delta=timedelta(minutes=30)
     )
     
@@ -79,9 +77,9 @@ async def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     # Vérifier le token
-    username = verify_token(token)
+    user_id = verify_token(token)
     
-    if username is None:
+    if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -89,7 +87,7 @@ async def get_current_user(
         )
     
     # Récupérer le user
-    user = UserService.get_by_username(db, username)
+    user = UserService.get_by_id(db, user_id)
     
     if user is None:
         raise HTTPException(

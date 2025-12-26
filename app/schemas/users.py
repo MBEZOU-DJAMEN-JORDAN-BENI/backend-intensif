@@ -10,12 +10,14 @@ class UserBase(BaseModel):
     email: EmailStr
 
 class UserCreate(UserBase):
-    password_hash: str = Field(...,min_length=8) 
+    password: str = Field(...,min_length=8, max_length=50) 
        
 class UserResponse(UserBase):
     id: int
     username: str
     email: str
+    created_at: datetime
+    is_active: bool
     
     class Config:
         from_attributes = True

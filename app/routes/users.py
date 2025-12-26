@@ -53,6 +53,7 @@ async def update_user(
     db_user = UserService.update(db, user_id, user_update)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
+    
     return db_user
 
 
@@ -72,6 +73,7 @@ async def delete_user(
     success = UserService.delete(db, user_id)
     if not success:
         raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
+    
     return None
         
     
