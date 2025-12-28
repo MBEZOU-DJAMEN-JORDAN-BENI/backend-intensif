@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 # Bibliotheque pour hasher les mots de passe 
 from passlib.context import CryptContext
 
-from app.config import settings
+from app.db.config import settings
 
 
 # CONFIGURATION DU HASHING

@@ -3,7 +3,30 @@ from sqlalchemy.orm import Session
 from app.models.todo import Todo
 from app.schemas.todos import TodoCreate, TodoUpdate
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class TodoService:
+    @staticmethod
+    def create(db: Session, todo_data: TodoCreate, user_id: int):
+        logger.info(f"Creating todo for user {user_id}: {todo_data.title}")
+        
+        try:
+            db_todo = Todo(**todo_data.model_dump(), user_id=user_id)
+            db.add(db_todo)
+            db.commit()
+            db.refresh(db_todo)
+            
+            logger.info(f"Todo created successfully: {db_todo}")
+            return db_todo
+        
+        except Exception as e:
+            logger.info(f"Error crearing todo: {str(e)}")
+            db.rollback()
+            raise
+        
+                    
     @staticmethod
     def get_all(db: Session):
         return db.query(Todo).all()
@@ -11,14 +34,6 @@ class TodoService:
     @staticmethod
     def get_by_id(db: Session, todo_id: int):
         return db.query(Todo).filter(Todo.id == todo_id).first()
-    
-    @staticmethod
-    def create(db: Session, todo_data: TodoCreate):
-        db_todo = Todo(**todo_data.model_dump())
-        db.add(db_todo)
-        db.commit()
-        db.refresh(db_todo) 
-        return db_todo
     
     @staticmethod
     def update(db:Session, todo_id: int, todo_data: TodoUpdate):

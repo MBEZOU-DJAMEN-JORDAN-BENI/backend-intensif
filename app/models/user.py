@@ -4,9 +4,13 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
 
 from datetime import datetime
-from typing import List
-from app.database import Base
+from typing import List, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from app.models.todo import Todo
+    from app.models.category import Category
+    
+from app.db.database import Base
 class User(Base):
     __tablename__ = "users"
     
@@ -19,7 +23,6 @@ class User(Base):
         DateTime(timezone=True), 
         server_default=func.now()
     )
-    
     is_active: Mapped[str] = mapped_column(Boolean, default=True)
     
     # Relation 1-N avec rodo
@@ -28,6 +31,7 @@ class User(Base):
         back_populates="owner",
         cascade="all, delete-orphan"
     )
+    categories: Mapped[List["Category"]] = relationship("Category", back_populates="owner")
     
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}, password='{self.password}')>"

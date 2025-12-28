@@ -4,7 +4,7 @@ from typing import List
 
 from app.schemas.todos import TodoCreate, TodoResponse, TodoUpdate
 from app.services.todo_service import TodoService
-from app.database import get_db
+from app.db.database import get_db
 from app.routes.auth import get_current_user
 from app.models.user import User
 from app.models.todo import Todo

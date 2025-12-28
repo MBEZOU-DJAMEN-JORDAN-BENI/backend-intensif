@@ -1,6 +1,7 @@
-from app.database import engine, Base
-from app.models.todo import Todo
 from app.models.user import User
+from app.models.todo import Todo
+from app.models.category import Category
+from app.db.database import engine, Base
 
 def init_db():
     print("Creation des Tables dans la base de donnees...")

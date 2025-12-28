@@ -6,6 +6,7 @@ from typing import Optional
 class TodoCreate(BaseModel):
     title: str
     description: str
+    priority:int = 1
 
 
 # SCHEMA 2 : Reponse d'un todo (sortie)
@@ -13,6 +14,7 @@ class TodoResponse(BaseModel):
     id: int 
     title: str
     description: str
+    priority: int
     done: bool
     user_id: int
     created_at: datetime
