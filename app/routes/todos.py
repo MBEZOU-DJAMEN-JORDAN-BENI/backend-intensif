@@ -49,7 +49,7 @@ async def get_todo(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
     ):
-    db_todo = db.querry(Todo).filter(
+    db_todo = db.query(Todo).filter(
         Todo.id == todo_id,
         Todo.user_id == current_user.id
     ).first()

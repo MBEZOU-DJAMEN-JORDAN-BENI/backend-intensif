@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, status
-from fatsapi.responses import JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 
 import logging
@@ -14,17 +15,13 @@ app = FastAPI(
     version="4.0.0"
 )
 
-app.include_router(auth.router)
-app.include_router(users.router)  
-app.include_router(todos.router)
-
 # =============================
 # CONFIGURATION DU LOGGING
 # =============================
 
 logging.basicConfig(
     level=logging.INFO,
-    fromat='%(asctime)s - %(name)s - %(levlename)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -36,7 +33,7 @@ logger = logging.getLogger(__name__)
 async def validattion_exception_handler(request: Request, exc: RecursionError):
     logger.error(f"Validation error: {exc.errors()}")
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "detail": exc.errors(),
             "message": "Validation error"
@@ -47,7 +44,7 @@ async def validattion_exception_handler(request: Request, exc: RecursionError):
 async def integrity_exception_handler(request: Request, exc:IntegrityError):
     logger.error(f"Database integrity error: {str(exc)}")
     return JSONResponse(
-        status_code=status.HTTP_400_UNPROCESSSABLE_ENTITY,
+        status_code=status.HTTP_400_BAD_REQUEST,
         content={
             "detail": "Database constraint violation",
             "message": "The operation violatess a database contraint"
@@ -58,7 +55,7 @@ async def integrity_exception_handler(request: Request, exc:IntegrityError):
 async def global_exception_handler(request: Request, exc:Exception):
     logger.error(f"Unhandler exception: {str(exc)}", exc_info=True)
     return JSONResponse(
-        status_code=status.HTTP_500_UNPROCESSSABLE_ENTITY,
+        status_code=status.HTTP_500_INTERNAL_SERER_ERROR,
         content={
             "detail": "Internal server error",
             "message": "An unexpected error occurred"
@@ -73,7 +70,7 @@ app.add_middleware(
     CORSMiddleware,
     
     # Liste des origines autorisees
-    allow_origins=settings.ALLPWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS,
     
     #Autoriser les coojies et l'authentification
     allow_credentials=True,
@@ -84,4 +81,23 @@ app.add_middleware(
     # Headers autorises
     allow_headers=["*"], # Tous les headers autorises
 )   
+
+# ===========================================
+# ENREGISTREMENT DES ROUTES 
+# ===========================================
+
+app.include_router(auth.router)
+app.include_router(users.router)  
+app.include_router(todos.router)
+
+@app.get("/")
+async def root():
+    return{
+        "message": "API Backend Intensif",
+        "version": "4.0.0",
+        "satus": "online"
+    }
     
+@app.get("/health")
+async def health_check():
+    return {"status": 'healthy'}
