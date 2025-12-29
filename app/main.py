@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 
+from datetime import datetime
 import logging
 
 from app.db.config import settings
@@ -90,14 +91,21 @@ app.include_router(auth.router)
 app.include_router(users.router)  
 app.include_router(todos.router)
 
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version":"1.0.0"
+    }
+
 @app.get("/")
 async def root():
     return{
         "message": "API Backend Intensif",
-        "version": "4.0.0",
-        "satus": "online"
+        "version": "1.0.0",
+        "satus": "online",
+        "docs": "/docs",
+        "health": "health"
     }
     
-@app.get("/health")
-async def health_check():
-    return {"status": 'healthy'}
