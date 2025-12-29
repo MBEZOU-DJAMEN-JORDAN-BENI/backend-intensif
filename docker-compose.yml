@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # ===================================
+  # SERVICE : PostgreSQL
+  # ===================================
+  db:
+    # Image Docker officielle PostgreSQL
+    image: postgres:15
+    container_name: backend_intensif_db
+    
+    # Variables d'environnement
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: backend_intensif
+    
+    # Mappage des ports
+    ports:
+      - "5432:5432"
+    
+    # Persiste les données (pas perdu au redémarrage)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    # Vérifie que PostgreSQL est prêt
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d backend_intensif"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # SERVICE : Application FastAPI
+  # ============================================
+  app:
+    # Construire l'image depuis le Dockerfile
+    build: .
+    container_name: backend_intensif_app
+    
+    # Attend que db soit prêt avant de démarrer
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    environment:
+      DATABASE_URL: postgresql://dev_user:dev_password@db:5432/backend_intensif
+      SECRET_KEY: your-secret-key-here-change-in-production
+      ENVIRONMENT: development
+    
+    ports:
+      - "8000:8000"
+    
+    # Monte le code en temps réel (hot reload)
+    volumes:
+      - .:/app
+    
+    # Commande à exécuter (override du CMD du Dockerfile)
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# ============================================
+# VOLUMES PERSISTANTS
+# ============================================
+volumes:
+  postgres_data:
