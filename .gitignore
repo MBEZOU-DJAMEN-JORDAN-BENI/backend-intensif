@@ -7,13 +7,25 @@ __pycache__/
 venv/
 .env
 
+# Environment variables
+.env.env.local
+
 # Database
 *.db
 *.sqlite3
 
+# Tests
+.pytest_cache/
+htmlcov/
+.coverage
+
 # IDE
 .vscode/
 .idea/
+
+# Logs
+logs/
+*.log
 
 # OS
 .DS_Store
