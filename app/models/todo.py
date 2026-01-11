@@ -39,7 +39,7 @@ class Todo(Base):
     
     #Relationship enver les users
     owner: Mapped["User"] = relationship("User", back_populates="todos")
-    category: Mapped["Category"] = relationship("Category", back_populates="todos")
+    # category: Mapped["Category"] = relationship("Category", back_populates="todos")
     
     #  METHODE __repr__ (Optionnelle mais utile)
     def __repr__(self):
