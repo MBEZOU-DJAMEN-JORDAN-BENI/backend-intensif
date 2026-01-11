@@ -56,7 +56,7 @@ async def integrity_exception_handler(request: Request, exc:IntegrityError):
 async def global_exception_handler(request: Request, exc:Exception):
     logger.error(f"Unhandler exception: {str(exc)}", exc_info=True)
     return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERER_ERROR,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "detail": "Internal server error",
             "message": "An unexpected error occurred"
