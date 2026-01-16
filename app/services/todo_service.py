@@ -22,14 +22,14 @@ class TodoService:
             return db_todo
         
         except Exception as e:
-            logger.info(f"Error crearing todo: {str(e)}")
+            logger.info(f"Error creating todo: {str(e)}")
             db.rollback()
             raise
         
                     
     @staticmethod
-    def get_all(db: Session):
-        return db.query(Todo).all()
+    def get_all(db: Session, user_id: int):
+        return db.query(Todo).filter(Todo.user_id == user_id).all()
     
     @staticmethod
     def get_by_id(db: Session, todo_id: int):

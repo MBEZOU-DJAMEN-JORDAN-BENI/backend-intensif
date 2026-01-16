@@ -1,11 +1,12 @@
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List
 from sqlalchemy.orm import Session
 
-from app.schemas.users import UserCreate, UserResponse, UserUpdate
+from app.schemas.users import UserResponse, UserUpdate
 from app.services.user_service import UserService
 from app.models.user import User
-from app.routes.auth import get_current_user
+from app.api.v1.endpoints.auth import get_current_user, get_current_admin
 from app.db.database import get_db
 
 # APIRputer() : Permet de grouper ddes des routes dans un module separe
@@ -17,7 +18,7 @@ users_db = []
 # 1.GET /users - Liste de tous les utilisatuers 
 @router.get("/", response_model=List[UserResponse])
 async def get_users(
-    current_user: User = Depends(get_current_user),
+    current_admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
     return UserService.get_all(db)
@@ -30,12 +31,10 @@ async def get_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    db_user = UserService.get_by_id(db, user_id)
-    if not db_user:
-        raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
-    return db_user
+    
+    return UserService.get_by_id(db, user_id)
 
- 
+  
 # 4. PUT /users/{user_id} - Mise a jour complete
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(
@@ -44,17 +43,8 @@ async def update_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="YOu can only update your own profile"
-        )
-        
-    db_user = UserService.update(db, user_id, user_update)
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    return db_user
+     
+    return UserService.update(db, user_id, user_update)
 
 
 # 5. DELETE /users/{user_id} - Supprimer une utilisateur
@@ -64,16 +54,7 @@ async def delete_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only delete your own account"
-        )
-        
-    success = UserService.delete(db, user_id)
-    if not success:
-        raise HTTPException(status_code=404, detail=f"User with id {user_id} not found")
     
-    return None
+    return UserService.delete(db, user_id)
         
     

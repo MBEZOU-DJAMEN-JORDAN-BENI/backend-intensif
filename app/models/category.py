@@ -1,3 +1,4 @@
+# app/models/category.py
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
@@ -20,3 +21,6 @@ class Category(Base):
     # Relations
     owner: Mapped["User"] = relationship("User", back_populates="categories")
     todos: Mapped[list["Todo"]] = relationship("Todo", back_populates="category")
+
+    def __repr__(self):
+        return f"<Category(id={self.id}, name='{self.name}', user_id={self.user_id})>"  

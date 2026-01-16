@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 # sessionmaker cree des session de base de donnes
 from sqlalchemy.orm import sessionmaker
 
-from app.db.config import settings
+from app.core.config import settings
 
 # CREATION DU MOTEUR DE BASE DE DONNEES
 engine = create_engine(

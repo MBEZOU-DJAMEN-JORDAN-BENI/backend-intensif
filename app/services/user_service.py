@@ -3,7 +3,7 @@ from typing import Optional
 
 from app.models.user import User
 from app.schemas.users import UserCreate, UserUpdate
-from app.auth.security import get_password_hash, verify_password
+from app.core.security import get_password_hash, verify_password
 
 class UserService:
     
@@ -21,17 +21,21 @@ class UserService:
     
     @staticmethod
     def get_by_email(db: Session, email: str) -> Optional[User]:
-        return db.query(User).filter(User.username == email).first()
+        return db.query(User).filter(User.email == email).first()
     
     @staticmethod
     def create(db: Session, user_data: UserCreate) -> User:
+        # Vérifier si c'est le premier utilisateur pour le rendre admin
+        total_users = db.query(User).count()
+        is_admin = True if total_users == 0 else False
         
+        # Créer un user avec le mot de passe hashe
         hashed_password = get_password_hash(user_data.password)
-        # Ceer un user avec le mot de passe hashe
         db_user = User(
             username=user_data.username,
             email = user_data.email,
-            hashed_password = hashed_password
+            hashed_password = hashed_password,
+            is_admin = is_admin
         )
         
         db.add(db_user)

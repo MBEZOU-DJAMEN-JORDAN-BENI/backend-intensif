@@ -39,8 +39,8 @@ class Todo(Base):
     
     #Relationship enver les users
     owner: Mapped["User"] = relationship("User", back_populates="todos")
-    # category: Mapped["Category"] = relationship("Category", back_populates="todos")
+    category: Mapped["Category"] = relationship("Category", back_populates="todos")
     
     #  METHODE __repr__ (Optionnelle mais utile)
     def __repr__(self):
-        return f"<Todo(id={self.id}, title='{self.title}', user_id = {self.user.id})>"
+        return f"<Todo(id={self.id}, title='{self.title}', user_id = {self.user_id})>" 

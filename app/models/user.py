@@ -1,4 +1,4 @@
-
+# app/models/user.py
 from sqlalchemy import Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -23,7 +23,8 @@ class User(Base):
         DateTime(timezone=True), 
         server_default=func.now()
     )
-    is_active: Mapped[str] = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     
     # Relation 1-N avec rodo
     todos: Mapped[List["Todo"]] = relationship(
@@ -31,7 +32,7 @@ class User(Base):
         back_populates="owner",
         cascade="all, delete-orphan"
     )
-    #categories: Mapped[List["Category"]] = relationship("Category", back_populates="owner")
+    categories: Mapped[List["Category"]] = relationship("Category", back_populates="owner")
     
     def __repr__(self):
-        return f"<User(id={self.id}, email='{self.email}, password='{self.password}')>"
+        return f"<User(id={self.id}, email='{self.email}, hashed_password='{self.hashed_password}')>"

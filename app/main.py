@@ -7,13 +7,13 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 import logging
 
-from app.db.config import settings
-from app.routes import todos, users, auth
+from app.core.config import settings
+from app.api.v1.api import api_router
 
 app = FastAPI(
     title="API Backend Intensif",
-    description="API REST avec Pydantic, Base de Donnees et Alembic",
-    version="4.0.0"
+    description="API REST avec Pydantic, Base de Donnees, Authentification JWT et Alembic",
+    version="6.1.3"
 )
 
 # =============================
@@ -87,9 +87,7 @@ app.add_middleware(
 # ENREGISTREMENT DES ROUTES 
 # ===========================================
 
-app.include_router(auth.router)
-app.include_router(users.router)  
-app.include_router(todos.router)
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():

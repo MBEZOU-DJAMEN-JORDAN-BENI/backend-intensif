@@ -6,7 +6,7 @@ from app.db.database import get_db
 from app.schemas.users import UserCreate, UserResponse
 from app.services.user_service import UserService
 from app.models.user import User
-from app.auth.security import create_access_token, verify_token
+from app.core.security import create_access_token, verify_token
 from datetime import timedelta
 1
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -34,9 +34,9 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
-    # Créer le user
+    # Créer le get_current_user
     return UserService.create(db, user_data)
-
+ 
 # ============================================
 # ROUTE LOGIN
 # ============================================
@@ -47,9 +47,9 @@ async def login(
     db: Session = Depends(get_db)
 ):
     # Authentifier l'utilisateur
-    user = UserService.authenticate(db, form_data.username, form_data.password)
+    get_current_user = UserService.authenticate(db, form_data.username, form_data.password)
     
-    if not user:
+    if not get_current_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -58,7 +58,7 @@ async def login(
     
     # Créer le token JWT
     access_token = create_access_token(
-        data={"sub": str(user.id)},
+        data={"sub": str(get_current_user.id)},
         expires_delta=timedelta(minutes=30)
     )
     
@@ -86,16 +86,24 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Récupérer le user
-    user = UserService.get_by_id(db, user_id)
+    # Récupérer le get_current_user
+    current_user = UserService.get_by_id(db, user_id)
     
-    if user is None:
+    if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found"
         )
-    
-    return user
+
+    return current_user
+
+async def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges"
+        )
+    return current_user
 
 # ROUTE /ME (utilisateur courant)
 @router.get("/me", response_model=UserResponse)
