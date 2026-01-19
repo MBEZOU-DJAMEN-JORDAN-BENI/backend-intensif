@@ -2,10 +2,12 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles 
 from sqlalchemy.exc import IntegrityError
 
 from datetime import datetime
 import logging
+import os
 
 from app.core.config import settings
 from app.api.v1.api import api_router
@@ -15,6 +17,10 @@ app = FastAPI(
     description="API REST avec Pydantic, Base de Donnees, Authentification JWT et Alembic",
     version="6.1.3"
 )
+
+# Gestion des chemins de fichiers pour les uploads
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # =============================
 # CONFIGURATION DU LOGGING

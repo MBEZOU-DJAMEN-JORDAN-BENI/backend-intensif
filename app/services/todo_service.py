@@ -1,4 +1,7 @@
+from operator import or_
+from typing import Optional
 from sqlalchemy.orm import Session
+from math import ceil
 
 from app.models.todo import Todo
 from app.schemas.todos import TodoCreate, TodoUpdate
@@ -26,14 +29,49 @@ class TodoService:
             db.rollback()
             raise
         
-                    
     @staticmethod
-    def get_all(db: Session, user_id: int):
-        return db.query(Todo).filter(Todo.user_id == user_id).all()
+    def get_paginated(
+        db: Session,
+        user_id: int, 
+        skip: int = 0,
+        limit: int = 20
+    ) -> tuple:
+        items = db.query(Todo)\
+            .filter(Todo.user_id == user_id)\
+            .offset(skip)\
+            .limit(limit)\
+            .all()
+            
+        total = db.query(Todo)\
+            .filter(Todo.user_id == user_id)\
+            .count()
+
+        return items, total
     
     @staticmethod
-    def get_by_id(db: Session, todo_id: int):
-        return db.query(Todo).filter(Todo.id == todo_id).first()
+    def serach_and_filter(
+        db: Session,
+        user_id: int,   
+        skip: int = 0,
+        limit: int = 20,
+        search: Optional[str] = None,
+        done: Optional[bool] = None
+    ) -> tuple:
+        query = db.query(Todo).filter(Todo.user_id == user_id)
+        
+        if search:
+            search_filter = f"%{search}%"
+            query = query.filter(
+                or_(Todo.title.ilike(search_filter), Todo.description.ilike(search_filter))
+            )
+        
+        if done is not None:
+            query = query.filter(Todo.done == done)
+        
+        total = query.count()
+        items = query.offset(skip).limit(limit).all()
+        
+        return items, total
     
     @staticmethod
     def update(db:Session, todo_id: int, todo_data: TodoUpdate):

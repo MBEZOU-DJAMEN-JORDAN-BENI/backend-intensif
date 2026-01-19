@@ -34,5 +34,7 @@ class User(Base):
     )
     categories: Mapped[List["Category"]] = relationship("Category", back_populates="owner")
     
+    profile_picture: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}, hashed_password='{self.hashed_password}')>"

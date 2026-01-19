@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
     
+    # Upload de fichiers
+    UPLOAD_DIRECTORY: str = "uploads/"
+    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
+    ALLOWED_EXTENSIONS: set = {"png", "jpg", "jpeg", "gif", "pdf", "txt"}
+    
     @property
     def sqlalchemy_database_url(self) -> str:
         """

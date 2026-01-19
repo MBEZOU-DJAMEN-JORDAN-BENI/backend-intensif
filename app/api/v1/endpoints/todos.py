@@ -1,8 +1,10 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
+from math import ceil
 
 from app.schemas.todos import TodoCreate, TodoResponse, TodoUpdate
+from app.schemas.common import PaginatedResponse
 from app.services.todo_service import TodoService
 from app.db.database import get_db
 from app.api.v1.endpoints.auth import get_current_user
@@ -16,13 +18,31 @@ router = APIRouter(prefix="/todos", tags=["todos"])
 todos_db = []
 
 # 1.GET /todos - Liste toutes les taches de l'utilisateur connecter
-@router.get("/", response_model=List[TodoResponse])
+@router.get("/", response_model=PaginatedResponse[TodoResponse])
 async def get_todos(
+    skip: int = 0,
+    limit: int = 20,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    limit = min(limit, 100)  # Limite maximale de 100 pour la taille de la page
     
-    return TodoService.get_all(db, current_user.id)
+    items, total = TodoService.get_paginated(
+        db,
+        current_user.id,
+        skip,
+        limit
+    )
+    page = (skip // limit) + 1
+    total_pages = ceil(total / limit) if limit > 0 else 0
+    
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        page_size=limit,
+        total_pages=total_pages
+    )
 
 
 # 2. POST /todos - Creer une tache
@@ -48,15 +68,36 @@ async def create_todo(
     return TodoService.create(db, todo, current_user.id)
 
 
-# 3. GET /todos/{todo_id} - Recuperer une tache
-@router.get("/{todo_id}", response_model=TodoResponse)
-async def get_todo(
-    todo_id: int, 
+# 3. GET /todos/search - Recuperer une tache
+@router.get("/search", response_model=PaginatedResponse[TodoResponse])
+async def search_todos(
+    skip: int = 0,
+    limit: int = 20,
+    search: Optional[str] = None,
+    done: Optional[bool] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
     ):
+    limit = min(limit, 100)  # Limite maximale de 100 pour la taille de la page
     
-    return TodoService.get_by_id(db, todo_id, user_id=current_user.id)
+    items, total = TodoService.serach_and_filter(
+        db,
+        current_user.id,
+        skip,
+        limit,
+        search,
+        done
+    )
+    page = (skip // limit) + 1
+    total_pages = ceil(total / limit) if limit > 0 else 0   
+    
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        page_size=limit,
+        total_pages=total_pages
+    )
 
  
 # 4. PUT /todos/{todo_id} - Mise a jour complete
