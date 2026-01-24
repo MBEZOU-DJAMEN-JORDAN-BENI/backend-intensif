@@ -1,3 +1,4 @@
+import time
 import os
 import uuid
 import aiofiles
@@ -6,16 +7,16 @@ from fastapi import UploadFile, HTTPException, status
 from PIL import Image
 from io import BytesIO
 
-from app.config import settings
+from app.core.config import settings
 
 class FileService:
     @staticmethod
-    async def validate_file(file: UploadFile) -> None:
-        extension = file.filename.split('.')[-1].lower()
-        if extension not in settings.ALLOWED_FILE_EXTENSIONS:
+    def validate_file(file: UploadFile) -> None:
+        extension = file.filename.split(".")[-1].lower()
+        if extension not in settings.ALLOWED_EXTENSIONS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"File type '{extension}' is not allowed."
+                detail=f"File type '{extension}' is not allowed. The allowed types are: {settings.ALLOWED_EXTENSIONS}"
             )
             
     @staticmethod
@@ -27,15 +28,16 @@ class FileService:
         
         extension = file.filename.split('.')[-1].lower()
         filename = f"{uuid.uuid4()}.{extension}"
-        file_path = Path(settings.FILE_STORAGE_PATH) / destination / filename
+        file_path = Path(settings.UPLOAD_DIRECTORY) / destination / filename
         file_path.parent.mkdir(parents=True, exist_ok=True)
         
         content = await file.read()
         if len(content) > settings.MAX_FILE_SIZE:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 detail="File size exceeds the maximum limit. Maximum allowed size is {settings.MAX_FILE_SIZE} bytes."
             )
+            
         async with aiofiles.open(file_path, 'wb') as f:
             await f.write(content)
             
@@ -63,13 +65,23 @@ class FileService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Uploaded file is not a valid image."
             )
+        
+        # Gestion du mode de couleurs    
+        if image.mode in ("RGBA", "LA") or (image.mode == "P" and "transparency" in image.info):
+            background = Image.new("RGB", image.size, (255, 255, 255))
+            background.paste(image, mask=image.convert("RGBA").split()[3]) # 3rd channel is the alpha channel
+            image = background
+        elif image.mode != "RGB":
+            image = image.convert("RGB")
             
         # Redimensionner l'image
-        image = image.resize((256, 256))
+        image = image.resize((300, 300))
         
         # Sauvegarder l'image redimensionnée
-        filename = f"user_{user_id}_profile.png"
-        file_path = Path(settings.FILE_STORAGE_PATH) / "profiles" / filename
+        timestamp = int(time.time())
+        filename = f"user_{user_id}_{timestamp}.jpg"
+        
+        file_path = Path(settings.UPLOAD_DIRECTORY) / "profiles" / filename
         file_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Sauvegarder l'image en un format specifique
@@ -79,11 +91,9 @@ class FileService:
     
     @staticmethod
     def delete_file(filename: str, destination: str = "profiles") -> None:
-        file_path = Path(settings.FILE_STORAGE_PATH) / destination / filename
+        file_path = Path(settings.UPLOAD_DIRECTORY) / destination / filename
         if file_path.exists():
             file_path.unlink()
             return True
         return False
-    
-    
     

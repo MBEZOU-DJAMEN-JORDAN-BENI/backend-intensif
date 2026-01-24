@@ -1,18 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.users import UserCreate, UserResponse
 from app.services.user_service import UserService
 from app.models.user import User
-from app.core.security import create_access_token, verify_token
+from app.core.security import create_access_token
+from app.api.deps import get_current_user
 from datetime import timedelta
-1
-router = APIRouter(prefix="/auth", tags=["authentication"])
 
-# CONFIGURATION OAuth2 Indique à FastAPI où obtenir le token, tokenUrl doit correspondre à la route de login
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+router = APIRouter(tags=["authentication"])
+
 
 # ROUTE REGISTER
 
@@ -68,42 +67,6 @@ async def login(
         "token_type": "bearer"
     }
 
-# ============================================
-# DEPENDENCY : Récupérer l'utilisateur courant
-# ============================================
-
-async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
-) -> User:
-    # Vérifier le token
-    user_id = verify_token(token)
-    
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Récupérer le get_current_user
-    current_user = UserService.get_by_id(db, user_id)
-    
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-
-    return current_user
-
-async def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient privileges"
-        )
-    return current_user
 
 # ROUTE /ME (utilisateur courant)
 @router.get("/me", response_model=UserResponse)

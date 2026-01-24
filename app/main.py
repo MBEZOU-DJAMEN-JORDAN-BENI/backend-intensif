@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles 
 from sqlalchemy.exc import IntegrityError
 
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
 
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # ===============================
 
 @app.exception_handler(RequestValidationError)
-async def validattion_exception_handler(request: Request, exc: RecursionError):
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.error(f"Validation error: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -54,7 +54,7 @@ async def integrity_exception_handler(request: Request, exc:IntegrityError):
         status_code=status.HTTP_400_BAD_REQUEST,
         content={
             "detail": "Database constraint violation",
-            "message": "The operation violatess a database contraint"
+            "message": "The operation violates a database constraint"
         }
     )    
     
@@ -99,7 +99,7 @@ app.include_router(api_router, prefix="/api/v1")
 async def health_check():
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "version":"1.0.0"
     }
 

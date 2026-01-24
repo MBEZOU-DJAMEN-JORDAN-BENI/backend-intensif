@@ -49,7 +49,11 @@ class TodoService:
         return items, total
     
     @staticmethod
-    def serach_and_filter(
+    def get_by_id(db: Session, todo_id: int, user_id: int):
+        return db.query(Todo).filter(Todo.id == todo_id, Todo.user_id == user_id).first()
+
+    @staticmethod
+    def search_and_filter(
         db: Session,
         user_id: int,   
         skip: int = 0,
@@ -74,13 +78,13 @@ class TodoService:
         return items, total
     
     @staticmethod
-    def update(db:Session, todo_id: int, todo_data: TodoUpdate):
+    def update(db:Session, todo_id: int, todo_data: TodoUpdate, user_id: int):
         #Recupere le todo
-        db_todo = TodoService.get_by_id(db, todo_id)
+        db_todo = TodoService.get_by_id(db, todo_id, user_id)
         if not db_todo:
             return None
         
-        # Convertir en dictionnnaire
+        # Convertir en dictionnaire
         update_data = todo_data.model_dump(exclude_unset=True)
         
         for key, value in update_data.items():
@@ -91,8 +95,8 @@ class TodoService:
         return db_todo
 
     @staticmethod
-    def delete(db: Session, todo_id: int):
-        db_todo = TodoService.get_by_id(db, todo_id)
+    def delete(db: Session, todo_id: int, user_id: int):
+        db_todo = TodoService.get_by_id(db, todo_id, user_id)
         if not db_todo:
             return False
         

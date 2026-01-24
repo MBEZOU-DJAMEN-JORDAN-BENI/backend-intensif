@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 # Bibliotheque pour generer les tokens
@@ -14,8 +14,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # CONFIGURATION JWT
 SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = "HS256" # Algorithme de chiffrement
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ALGORITHM = settings.ALGORITHM # Algorithme de chiffrement
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # FONCTION DE HASHING
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -24,15 +24,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-3 # FONCTION JWT
+# FONCTION JWT
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     
     # Calculer la date d'expiration
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         
     # Ajouter l'expiration au payload
     to_encode.update({"exp": expire})

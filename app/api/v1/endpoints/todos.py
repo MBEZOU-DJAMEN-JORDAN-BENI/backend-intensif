@@ -7,7 +7,7 @@ from app.schemas.todos import TodoCreate, TodoResponse, TodoUpdate
 from app.schemas.common import PaginatedResponse
 from app.services.todo_service import TodoService
 from app.db.database import get_db
-from app.api.v1.endpoints.auth import get_current_user
+from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.category import Category
  
@@ -80,7 +80,7 @@ async def search_todos(
     ):
     limit = min(limit, 100)  # Limite maximale de 100 pour la taille de la page
     
-    items, total = TodoService.serach_and_filter(
+    items, total = TodoService.search_and_filter(
         db,
         current_user.id,
         skip,

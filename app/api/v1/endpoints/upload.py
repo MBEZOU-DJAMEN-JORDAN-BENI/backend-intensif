@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
-from splqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.services.file_service import FileService
