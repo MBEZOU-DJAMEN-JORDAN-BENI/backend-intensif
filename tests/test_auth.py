@@ -2,19 +2,19 @@ import pytest
 from fastapi import status
 
 # ===============================
-# TESTS REGIDTER
+# TESTS REGISTER
 # ==============================
 
 def test_register_success(client):
     response = client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
             "username": "newuser",
             "email": "newuser@example.com",
             "password": "password123"
         }
     )
-    # Verifer la condition vrai
+    # Vérifier la condition vraie
     assert response.status_code == status.HTTP_201_CREATED
     
     data = response.json()
@@ -26,9 +26,9 @@ def test_register_success(client):
     
 def test_register_duplicate_username(client, test_user):
     response = client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
-            "username": "testuser", # deja exixtant
+            "username": "testuser",  # déjà existant
             "email": "other@example.com",
             "password": "password123"
         }
@@ -37,12 +37,12 @@ def test_register_duplicate_username(client, test_user):
     assert "already register" in response.json()["detail"].lower()
     
     
-def test_register_diplicate_email(client, test_user):
+def test_register_duplicate_email(client, test_user):
     response = client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
             "username": "otheruser",
-            "email": "test@example.com", # deja existant
+            "email": "test@example.com",  # déjà existant
             "password": "password123"
         }
     )
@@ -52,7 +52,7 @@ def test_register_diplicate_email(client, test_user):
 
 def test_register_invalid_email(client):
     response = client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
             "username": "newuser",
             "email": "pas-un-email",
@@ -63,9 +63,9 @@ def test_register_invalid_email(client):
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     
 
-def test_register_short_passowrd(client):
+def test_register_short_password(client):
     response = client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
             "username": "newuser",
             "email": "newuser@example.com",
@@ -82,7 +82,7 @@ def test_register_short_passowrd(client):
 
 def test_login_success(client, test_user):
     response = client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         data={
             "username": "testuser",
             "password": "testpassword123"
@@ -97,7 +97,7 @@ def test_login_success(client, test_user):
 
 def test_login_wrong_password(client, test_user):
     response = client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         data={
             "username": "testuser",
             "password": "wrongpassword"
@@ -108,9 +108,9 @@ def test_login_wrong_password(client, test_user):
 
 def test_login_nonexistent_user(client, test_user):
     response = client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         data={
-            "username": "nonexiststent",
+            "username": "nonexistent",
             "password": "password123"
         }
     )
@@ -123,8 +123,8 @@ def test_login_nonexistent_user(client, test_user):
 
 def test_get_me_authenticated(client, auth_headers):
     response = client.get(
-        "/auth/me",
-        headers=auth_headers # Token JWT dans le header
+        "/api/v1/auth/me",
+        headers=auth_headers  # Token JWT dans le header
     )
     assert response.status_code == status.HTTP_200_OK
     
@@ -133,15 +133,15 @@ def test_get_me_authenticated(client, auth_headers):
     assert data["email"] == "test@example.com"
     
 
-def test_get_me_authenticated(client):
-    response = client.get("/auth/me")
+def test_get_me_unauthenticated(client):
+    response = client.get("/api/v1/auth/me")
     
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     
 
 def test_get_me_invalid_token(client):
     response = client.get(
-        "/auth/me",
+        "/api/v1/auth/me",
         headers={"Authorization": "Bearer token-invalide"}
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

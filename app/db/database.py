@@ -11,9 +11,9 @@ from app.core.config import settings
 
 # CREATION DU MOTEUR DE BASE DE DONNEES
 engine = create_engine(
-    settings.DATABASE_URL,
-    # echo=True Affiche toutes les requets SQL dans le terminal(utile pour deboguer)
-    echo=True
+    settings.sqlalchemy_database_url,
+    # echo=True Affiche toutes les requêtes SQL dans le terminal (utile pour déboguer)
+    echo=settings.ENVIRONMENT == "development"
 )
 
 # SESSION FACTORY

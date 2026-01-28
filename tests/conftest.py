@@ -81,7 +81,7 @@ def test_user(db_session):
 @pytest.fixture(scope="function")
 def auth_headers(client, test_user):
     response = client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         data={
             "username": "testuser",
             "password": "testpassword123"

@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
     ALLOWED_EXTENSIONS: set = {"png", "jpg", "jpeg", "gif", "pdf", "txt"}
     
+    # OpenAI Configuration
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"  # Modèle par défaut (moins cher)
+    OPENAI_MAX_TOKENS: int = 1000
+    OPENAI_TEMPERATURE: float = 0.7
+    
     @property
     def sqlalchemy_database_url(self) -> str:
         """

@@ -1,4 +1,4 @@
-from typing import Generic , TypeVar, List
+from typing import Generic, TypeVar, List
 from pydantic import BaseModel
 
 T = TypeVar("T")
@@ -9,6 +9,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     total: int
     page: int 
     page_size: int
+    total_pages: int
     
-    class config:
-        arbitrary_types_allowed = True 
+    class Config:
+        arbitrary_types_allowed = True

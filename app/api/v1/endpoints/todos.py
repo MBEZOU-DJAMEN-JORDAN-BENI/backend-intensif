@@ -11,11 +11,9 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.category import Category
  
-# APIRputer() : Permet de grouper ddes des routes dans un module separe
-router = APIRouter(prefix="/todos", tags=["todos"])
+# APIRouter() : Permet de grouper des routes dans un module séparé
+router = APIRouter(tags=["todos"])
 
-# Base de Donnee temporaire
-todos_db = []
 
 # 1.GET /todos - Liste toutes les taches de l'utilisateur connecter
 @router.get("/", response_model=PaginatedResponse[TodoResponse])
@@ -100,7 +98,7 @@ async def search_todos(
     )
 
  
-# 4. PUT /todos/{todo_id} - Mise a jour complete
+# 4. PUT /todos/{todo_id} - Mise à jour d'une tâche
 @router.put("/{todo_id}", response_model=TodoResponse)
 async def update_todo(
     todo_id: int, 
@@ -108,18 +106,26 @@ async def update_todo(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-       
-    return TodoService.update(db, todo_id, todo_update, user_id=current_user.id)
+    updated_todo = TodoService.update(db, todo_id, todo_update, user_id=current_user.id)
+    if not updated_todo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo not found"
+        )
+    return updated_todo
 
 
-# 5. DELETE /todos/{todo_id} - Supprimer une tache
+# 5. DELETE /todos/{todo_id} - Supprimer une tâche
 @router.delete("/{todo_id}", status_code=204)
 async def delete_todo(
     todo_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
-    ):
-    
-    return TodoService.delete(db, todo_id, user_id=current_user.id)
-        
-    
+):
+    deleted = TodoService.delete(db, todo_id, user_id=current_user.id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Todo not found"
+        )
+    return None

@@ -11,6 +11,7 @@ import os
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.api.v2.endpoints import ai
 
 app = FastAPI(
     title="API Backend Intensif",
@@ -94,22 +95,23 @@ app.add_middleware(
 # ===========================================
 
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(ai.router, prefix="/api/v2")
 
 @app.get("/health")
 async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "version":"1.0.0"
+        "version": "6.1.3"
     }
 
 @app.get("/")
 async def root():
-    return{
+    return {
         "message": "API Backend Intensif",
-        "version": "1.0.0",
-        "satus": "online",
+        "version": "6.1.3",
+        "status": "online",
         "docs": "/docs",
-        "health": "health"
+        "health": "/health"
     }
     

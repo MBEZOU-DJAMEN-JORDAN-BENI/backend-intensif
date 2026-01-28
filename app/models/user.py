@@ -1,4 +1,5 @@
 # app/models/user.py
+from app.models.ai_prediction import AIPrediction
 from sqlalchemy import Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -34,7 +35,15 @@ class User(Base):
     )
     categories: Mapped[List["Category"]] = relationship("Category", back_populates="owner")
     
+    # Fichier image (generalement) charger par l'utilisateur
     profile_picture: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    
+
+    # Relation 1-N avec les prédictions IA
+    ai_predictions: Mapped[List["AIPrediction"]] = relationship(
+        "AIPrediction",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}, hashed_password='{self.hashed_password}')>"
